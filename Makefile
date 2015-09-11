@@ -1,8 +1,10 @@
 CC=gcc
 LIB=-lm
-CFLAGS=-O2
+CFLAGS=-O2 -I .
+OBJ = gen.o fcm.o pcm.o main.o
+DEPS= gnuplot.h shared.h fcm.h pcm.h
 
-all : gen fcm pcm
+all : gen  main
 
 gen : gen.o
 	${CC} ${CFLAGS} -o gen gen.o ${LIB}
@@ -10,25 +12,19 @@ gen : gen.o
 gen.o : gen.c
 	${CC} ${CFLAGS} -c gen.c
 
-fcm : fcm.o
-	${CC} ${CFLAGS} -o fcm fcm.o ${LIB}
-
-fcm.o : fcm.c
+fcm.o : fcm.c 
 	${CC} ${CFLAGS} -c fcm.c
-
-pcm : pcm.o
-	${CC} ${CFLAGS} -o pcm pcm.o ${LIB}
 
 pcm.o : pcm.c
 	${CC} ${CFLAGS} -c pcm.c
 
-#shared : shared.o
-#	${CC} ${CFLAGS} -o shared shared.o ${LIB}
-#
-#shared.o : shared.c
-#	${CC} ${CFLAGS} -c shared.c
+main : main.o pcm.o fcm.o
+	gcc -o $@ $^ $(CFLAGS) $(LIB)
+
+main.o : main.c ${DEPS}
+	${CC} -c -o $@ $< ${CFLAGS}
 
 clean:
-	rm -f fcm pcm gen 
+	rm -f fcm pcm gen main
 	rm -f *.o
 	rm -f *~

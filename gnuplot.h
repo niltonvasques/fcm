@@ -3,7 +3,7 @@
 
 #include "shared.h"
 
-inline int gnuplot_membership_matrix() {
+static inline int gnuplot_membership_matrix() {
     int i, j, cluster;
     char fname[100];
     double highest;

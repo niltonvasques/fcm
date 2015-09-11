@@ -1,3 +1,4 @@
+#include "fcm.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,12 +6,8 @@
 #include "shared.h"
 #include "gnuplot.h"
 
-#define __MAIN_FILE__ 
 
-
-
-int
-init(char *fname) {
+static inline int init(char *fname) {
     int i, j, r, rval;
     FILE *f;
     double s;
@@ -69,8 +66,7 @@ failure:
     exit(1);
 }
 
-int
-calculate_centre_vectors() {
+static inline int calculate_centre_vectors() {
     int i, j, k;
     double numerator, denominator;
     double t[MAX_DATA_POINTS][MAX_CLUSTER];
@@ -93,8 +89,7 @@ calculate_centre_vectors() {
     return 0;
 }
 
-double
-get_norm(int i, int j) {
+static inline double get_norm(int i, int j) {
     int k;
     double sum = 0.0;
     for (k = 0; k < num_dimensions; k++) {
@@ -103,8 +98,7 @@ get_norm(int i, int j) {
     return sqrt(sum);
 }
 
-double
-get_new_value(int i, int j) {
+static inline double get_new_value(int i, int j) {
     int k;
     double t, p, sum;
     sum = 0.0;
@@ -117,8 +111,7 @@ get_new_value(int i, int j) {
     return 1.0 / sum;
 }
 
-double
-update_degree_of_membership() {
+static inline double update_degree_of_membership() {
     int i, j;
     double new_uij;
     double max_diff = 0.0, diff;
@@ -146,79 +139,3 @@ fcm(char *fname) {
 }
 
 
-void
-print_data_points(char *fname) {
-    int i, j;
-    FILE *f;
-    if (fname == NULL)
-        f = stdout;
-    else if ((f = fopen(fname, "w")) == NULL) {
-        printf("Cannot create output file.\n");
-        exit(1);
-    }
-    fprintf(f, "Data points:\n");
-    for (i = 0; i < num_data_points; i++) {
-        printf("Data[%d]: ", i);
-        for (j = 0; j < num_dimensions; j++) {
-            printf("%.5lf ", data_point[i][j]);
-        }
-        printf("\n");
-    }
-    if (fname == NULL)
-        fclose(f);
-}
-
-void
-print_membership_matrix(char *fname) {
-    int i, j;
-    FILE *f;
-    if (fname == NULL)
-        f = stdout;
-    else if ((f = fopen(fname, "w")) == NULL) {
-        printf("Cannot create output file.\n");
-        exit(1);
-    }
-    fprintf(f, "Membership matrix:\n");
-    for (i = 0; i < num_data_points; i++) {
-        fprintf(f, "Data[%d]: ", i);
-        for (j = 0; j < num_clusters; j++) {
-            fprintf(f, "%lf ", degree_of_memb[i][j]);
-        }
-        fprintf(f, "\n");
-    }
-    if (fname == NULL)
-        fclose(f);
-}
-
-int
-main(int argc, char **argv) {
-    printf
-            ("------------------------------------------------------------------------\n");
-    if (argc != 2) {
-        printf("USAGE: fcm <input file>\n");
-        exit(1);
-    }
-    fcm(argv[1]);
-    printf("Number of data points: %d\n", num_data_points);
-    printf("Number of clusters: %d\n", num_clusters);
-    printf("Number of data-point dimensions: %d\n", num_dimensions);
-    printf("Accuracy margin: %lf\n", epsilon);
-    print_membership_matrix("membership.matrix");
-    gnuplot_membership_matrix();
-    printf
-            ("------------------------------------------------------------------------\n");
-    printf("The program run was successful...\n");
-    printf("Storing membership matrix in file 'membership.matrix'\n\n");
-    printf("If the points are on a plane (2 dimensions)\n");
-    printf("the gnuplot script was generated in file 'gnuplot.script', and\n");
-    printf("the gnuplot data in files cluster.[0]... \n\n");
-    printf
-            ("Process 'gnuplot.script' to generate graph: 'cluster_plot.png'\n\n");
-    printf
-            ("NOTE: While generating the gnuplot data, for each of the data points\n");
-    printf("the corresponding cluster is the one which has the highest\n");
-    printf("degree-of-membership as found in 'membership.matrix'.\n");
-    printf
-            ("------------------------------------------------------------------------\n");
-    return 0;
-}
