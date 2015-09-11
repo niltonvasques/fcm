@@ -2,7 +2,7 @@ CC=gcc
 LIB=-lm
 CFLAGS=-O2
 
-all : gen fcm
+all : gen fcm pcm
 
 gen : gen.o
 	${CC} ${CFLAGS} -o gen gen.o ${LIB}
@@ -16,7 +16,19 @@ fcm : fcm.o
 fcm.o : fcm.c
 	${CC} ${CFLAGS} -c fcm.c
 
+pcm : pcm.o
+	${CC} ${CFLAGS} -o pcm pcm.o ${LIB}
+
+pcm.o : pcm.c
+	${CC} ${CFLAGS} -c pcm.c
+
+#shared : shared.o
+#	${CC} ${CFLAGS} -o shared shared.o ${LIB}
+#
+#shared.o : shared.c
+#	${CC} ${CFLAGS} -c shared.c
+
 clean:
-	rm -f fcm gen
+	rm -f fcm pcm gen 
 	rm -f *.o
 	rm -f *~

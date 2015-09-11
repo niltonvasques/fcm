@@ -1,0 +1,10 @@
+*.o
+cluster.*
+input.dat
+membership.matrix
+pcm
+fcm
+gen
+*.png
+*.swp
+gnuplot.script
