@@ -3,6 +3,7 @@
 #include "shared.h"
 #include "gnuplot.h"
 #include "pcm.h"
+#include "pfcm.h"
 #include "fcm.h"
 
 #define __MAIN_FILE__ 
@@ -17,12 +18,13 @@ static char args_doc[] = "[FILENAME]...";
 static struct argp_option options[] = { 
     { "fcm", 'f', 0, 0, "Run fuzzy c means."},
     { "pcm", 'p', 0, 0, "Run possibilistc c means."},
+    { "pfcm", 'x', 0, 0, "Run possibilistc fuzzy c means."},
     { "input", 'i', "INPUT", 0, "Path for input data."},
     { 0 } 
 };
 
 struct arguments {
-    enum { FCM, PCM } mode;
+    enum { FCM, PCM, PFCM } mode;
     char *input;
 };
 
@@ -31,6 +33,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     switch (key) {
     case 'f': arguments->mode = FCM; break;
     case 'p': arguments->mode = PCM; break;
+    case 'x': arguments->mode = PFCM; break;
     case 'i': arguments->input = arg; break;
     case ARGP_KEY_ARG: return 0;
     default: return ARGP_ERR_UNKNOWN;
@@ -48,13 +51,18 @@ int main(int argc, char *argv[])
     arguments.mode = FCM;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
-    if(!arguments.input) return 0;
+    if(!arguments.input) {
+      printf("--input FILE is required.\n");
+      return 0;
+    }
 
     printf ("------------------------------------------------------------------------\n");
     if(arguments.mode == PCM){
       pcm(arguments.input);
     }else if(arguments.mode == FCM){
       fcm(arguments.input);
+    }else if(arguments.mode == PFCM){
+      pfcm(arguments.input);
     }
 
     printf("Number of data points: %d\n", num_data_points);

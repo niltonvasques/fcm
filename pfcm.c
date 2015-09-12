@@ -1,12 +1,14 @@
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h> #include <stdlib.h>
 #include <string.h>
 #include "shared.h"
 #include "gnuplot.h"
-#include "pcm.h"
+#include "pfcm.h"
 
 double gamas[MAX_CLUSTER];
+double a, b;
+double fuzziness_n;
+double tik[MAX_DATA_POINTS][MAX_CLUSTER];
 
 static inline int init(char *fname) {
   int i, j, r, rval;
@@ -73,7 +75,8 @@ static inline int calculate_centre_vectors() {
   double t[MAX_DATA_POINTS][MAX_CLUSTER];
   for (i = 0; i < num_data_points; i++) {
     for (j = 0; j < num_clusters; j++) {
-      t[i][j] = pow(degree_of_memb[i][j], fuzziness);
+      t[i][j] = a * pow(degree_of_memb[i][j], fuzziness) +
+        b * pow(tik[i][j], fuzziness_n);
     }
   }
   for (j = 0; j < num_clusters; j++) {
@@ -143,8 +146,7 @@ static inline double tipicality(double distance, int j){
 static inline double update_degree_of_membership() {
   int i, j;
   double new_uij;
-  double tik;
-  double sum_ic = 0;
+  double new_tik;
   double sum_kn = 0;
   double sum_lc = 0;
   double sum_jn[num_clusters];
@@ -155,17 +157,20 @@ static inline double update_degree_of_membership() {
   }
 
   for (i = 0; i < num_data_points; i++) {
-    sum_ic = 0;
     for (j = 0; j < num_clusters; j++) {
       distance = get_norm(i, j);
-      new_uij = tipicality(distance, j);
-      tik = pow(new_uij, fuzziness);
-      sum_ic += tik * distance;
-      tik = pow(1 - new_uij, fuzziness);
-      sum_jn[j] += tik;
+      new_uij = get_new_value(i, j);
+      tik[i][j] = tipicality(distance, j);
+
+      //degree_of_memb[i][j] = a * new_uij + b * new_tik;
       degree_of_memb[i][j] = new_uij;
+
+      new_uij = pow(new_uij, fuzziness);
+
+      sum_kn += (a * new_uij + b * pow(tik[i][j], fuzziness_n)) * distance;
+      new_tik = pow(1 - tik[i][j], fuzziness_n);
+      sum_jn[j] += tik[i][j];
     }
-    sum_kn += sum_ic;
   }
 
   for (j = 0; j < num_clusters; j++) {
@@ -175,18 +180,20 @@ static inline double update_degree_of_membership() {
   return sum_kn + sum_lc;
 }
 
-int pcm(char *fname) {
+int pfcm(char *fname) {
   double max_diff;
   double curr_j = 0, old_j = 0;
   //init(fname);
   fcm(fname);
   estimate_gamas();
+  fuzziness_n = fuzziness;
+  a = b = 1;
   do {
     calculate_centre_vectors();
     curr_j = update_degree_of_membership();
-    max_diff = abs(curr_j - old_j);
+    max_diff = fabs(curr_j - old_j);
     old_j = curr_j;
-    printf("max_diff: %f\n", max_diff);
+    printf("max_diff: %f curr_j %f old_j %f result %f\n", max_diff, curr_j, old_j, curr_j - old_j);
   } while (max_diff > epsilon);
   return 0;
 }
