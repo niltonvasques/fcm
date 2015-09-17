@@ -1,6 +1,5 @@
 #include <math.h>
-#include <stdio.h> #include <stdlib.h>
-#include <string.h>
+#include <stdio.h> #include <stdlib.h> #include <string.h>
 #include "shared.h"
 #include "gnuplot.h"
 #include "pfcm.h"
@@ -157,8 +156,8 @@ static inline double update_degree_of_membership() {
   }
 
   for (i = 0; i < num_data_points; i++) {
-    for (j = 0; j < num_clusters; j++) {
-      distance = get_norm(i, j);
+    for (j = 0; j < num_clusters; j++) { 
+      distance = get_norm(i, j); 
       new_uij = get_new_value(i, j);
       tik[i][j] = tipicality(distance, j);
 
@@ -167,7 +166,7 @@ static inline double update_degree_of_membership() {
 
       new_uij = pow(new_uij, fuzziness);
 
-      sum_kn += (a * new_uij + b * pow(tik[i][j], fuzziness_n)) * distance;
+      sum_kn += (a * new_uij + b * pow(tik[i][j], fuzziness_n)) * ( distance * distance );
       new_tik = pow(1 - tik[i][j], fuzziness_n);
       sum_jn[j] += tik[i][j];
     }
@@ -183,11 +182,13 @@ static inline double update_degree_of_membership() {
 int pfcm(char *fname) {
   double max_diff;
   double curr_j = 0, old_j = 0;
-  //init(fname);
+  ///init(fname);
   fcm(fname);
+  //calculate_centre_vectors();
   estimate_gamas();
   fuzziness_n = fuzziness;
-  a = b = 1;
+  a = 1;
+  b = 1;
   do {
     calculate_centre_vectors();
     curr_j = update_degree_of_membership();
