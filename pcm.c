@@ -178,8 +178,8 @@ static inline double update_degree_of_membership() {
 int pcm(char *fname) {
   double max_diff;
   double curr_j = 0, old_j = 0;
-  init(fname);
-  //fcm(fname);
+  //init(fname);
+  fcm(fname);
   estimate_gamas();
   do {
     calculate_centre_vectors();
